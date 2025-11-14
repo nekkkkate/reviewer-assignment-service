@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourcePerFileMappings">
+    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/edce99f5-8f8d-4294-8663-9d98629abfa6/console.sql" value="edce99f5-8f8d-4294-8663-9d98629abfa6" />
+    <file url="file://$PROJECT_DIR$/internal/infrustructure/migrations/1_teams_table.down.sql" value="edce99f5-8f8d-4294-8663-9d98629abfa6" />
+    <file url="file://$PROJECT_DIR$/internal/infrustructure/migrations/1_teams_table.up.sql" value="edce99f5-8f8d-4294-8663-9d98629abfa6" />
+    <file url="file://$PROJECT_DIR$/internal/infrustructure/migrations/2_users_table.down.sql" value="edce99f5-8f8d-4294-8663-9d98629abfa6" />
+    <file url="file://$PROJECT_DIR$/internal/infrustructure/migrations/2_users_table.up.sql" value="edce99f5-8f8d-4294-8663-9d98629abfa6" />
+    <file url="file://$PROJECT_DIR$/internal/infrustructure/migrations/3_team_members_table.down.sql" value="edce99f5-8f8d-4294-8663-9d98629abfa6" />
+    <file url="file://$PROJECT_DIR$/internal/infrustructure/migrations/3_team_members_table.up.sql" value="edce99f5-8f8d-4294-8663-9d98629abfa6" />
+    <file url="file://$PROJECT_DIR$/internal/infrustructure/migrations/4_prs_table.down.sql" value="edce99f5-8f8d-4294-8663-9d98629abfa6" />
+    <file url="file://$PROJECT_DIR$/internal/infrustructure/migrations/4_prs_table.up.sql" value="edce99f5-8f8d-4294-8663-9d98629abfa6" />
+    <file url="file://$PROJECT_DIR$/internal/infrustructure/migrations/5_assigned_reviewers_table.down.sql" value="edce99f5-8f8d-4294-8663-9d98629abfa6" />
+    <file url="file://$PROJECT_DIR$/internal/infrustructure/migrations/5_assigned_reviewers_table.up.sql" value="edce99f5-8f8d-4294-8663-9d98629abfa6" />
+    <file url="file://$PROJECT_DIR$/internal/infrustructure/migrations/6_create_indexes.down.sql" value="edce99f5-8f8d-4294-8663-9d98629abfa6" />
+    <file url="file://$PROJECT_DIR$/internal/infrustructure/migrations/6_create_indexes.up.sql" value="edce99f5-8f8d-4294-8663-9d98629abfa6" />
+  </component>
+</project>
