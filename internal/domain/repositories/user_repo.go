@@ -11,6 +11,7 @@ type UserRepository interface {
 	GetByEmail(email string) (*models.User, error)
 	GetAll() ([]*models.User, error)
 	GetActiveUsers() ([]*models.User, error)
+	GetWithFilters(teamName string, isActive bool) ([]*models.User, error)
 	Update(user *models.User) error
 	Deactivate(userID int) error
 }
