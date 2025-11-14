@@ -1,0 +1,1 @@
+drop table if exists assigned_reviewers cascade;
