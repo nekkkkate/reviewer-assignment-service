@@ -17,5 +17,6 @@ require (
 
 require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/stretchr/objx v0.5.3 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
