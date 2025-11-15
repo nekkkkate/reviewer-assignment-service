@@ -65,6 +65,7 @@ func (u *UserDataBase) GetByID(id int) (*models.User, error) {
 		}
 		return nil, err
 	}
+
 	return user, nil
 }
 
