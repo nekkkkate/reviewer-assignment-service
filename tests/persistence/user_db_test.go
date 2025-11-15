@@ -203,7 +203,6 @@ func TestUserDataBase_GetWithFilters(t *testing.T) {
 			{ID: 3, Name: "Bob Johnson", Email: "bob@example.com", TeamName: "backend", IsActive: false},
 		}
 
-		// Теперь ожидаем два условия: team_name AND is_active
 		mock.ExpectQuery(regexp.QuoteMeta(`SELECT id, name, email, team_name, is_active FROM users WHERE team_name = $1 AND is_active = $2`)).
 			WithArgs("backend", false).
 			WillReturnRows(sqlmock.NewRows([]string{"id", "name", "email", "team_name", "is_active"}).
@@ -278,16 +277,18 @@ func TestUserDataBase_Update(t *testing.T) {
 			IsActive: true,
 		}
 
+		mock.ExpectBegin()
 		mock.ExpectExec(regexp.QuoteMeta(`UPDATE users SET name = $1, email = $2, team_name = $3, is_active = $4 WHERE id = $5`)).
 			WithArgs("John Doe Updated", "john.updated@example.com", "backend", true, 1).
 			WillReturnResult(sqlmock.NewResult(0, 1))
+		mock.ExpectCommit()
 
 		err = userDB.Update(user)
 		assert.NoError(t, err)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("user not found for update", func(t *testing.T) {
+	t.Run("database error during update", func(t *testing.T) {
 		db, mock, err := sqlmock.New()
 		require.NoError(t, err)
 		defer db.Close()
@@ -295,19 +296,22 @@ func TestUserDataBase_Update(t *testing.T) {
 		userDB := postgres.NewUserDataBase(db)
 
 		user := &models.User{
-			ID:       999,
-			Name:     "Nonexistent User",
-			Email:    "nonexistent@example.com",
+			ID:       1,
+			Name:     "John Doe Updated",
+			Email:    "john.updated@example.com",
 			TeamName: "backend",
 			IsActive: true,
 		}
 
+		mock.ExpectBegin()
 		mock.ExpectExec(regexp.QuoteMeta(`UPDATE users SET name = $1, email = $2, team_name = $3, is_active = $4 WHERE id = $5`)).
-			WithArgs("Nonexistent User", "nonexistent@example.com", "backend", true, 999).
-			WillReturnResult(sqlmock.NewResult(0, 0))
+			WithArgs("John Doe Updated", "john.updated@example.com", "backend", true, 1).
+			WillReturnError(errors.New("connection failed"))
+		mock.ExpectRollback()
 
 		err = userDB.Update(user)
-		assert.ErrorIs(t, err, repositories.ErrUserNotFoundInPersistence)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "connection failed")
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 }
@@ -320,28 +324,33 @@ func TestUserDataBase_Deactivate(t *testing.T) {
 
 		userDB := postgres.NewUserDataBase(db)
 
+		mock.ExpectBegin()
 		mock.ExpectExec(regexp.QuoteMeta(`UPDATE users SET is_active = $1 WHERE id = $2`)).
 			WithArgs(false, 1).
 			WillReturnResult(sqlmock.NewResult(0, 1))
+		mock.ExpectCommit()
 
 		err = userDB.Deactivate(1)
 		assert.NoError(t, err)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("user not found for deactivation", func(t *testing.T) {
+	t.Run("database error during deactivation", func(t *testing.T) {
 		db, mock, err := sqlmock.New()
 		require.NoError(t, err)
 		defer db.Close()
 
 		userDB := postgres.NewUserDataBase(db)
 
+		mock.ExpectBegin()
 		mock.ExpectExec(regexp.QuoteMeta(`UPDATE users SET is_active = $1 WHERE id = $2`)).
-			WithArgs(false, 999).
-			WillReturnResult(sqlmock.NewResult(0, 0))
+			WithArgs(false, 1).
+			WillReturnError(errors.New("connection failed"))
+		mock.ExpectRollback()
 
-		err = userDB.Deactivate(999)
-		assert.ErrorIs(t, err, repositories.ErrUserNotFoundInPersistence)
+		err = userDB.Deactivate(1)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "connection failed")
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 }

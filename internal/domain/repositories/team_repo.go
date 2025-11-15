@@ -18,4 +18,5 @@ type TeamRepository interface {
 var (
 	ErrTeamNotFoundInPersistence = errors.New("team not found")
 	ErrTeamAlreadyExists         = errors.New("team already exists")
+	ErrUserNotInTeam             = errors.New("user not in team")
 )

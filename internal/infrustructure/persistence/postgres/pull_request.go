@@ -29,6 +29,25 @@ func (p *PullRequestDataBase) Add(pr *models.PullRequest) error {
 	}
 	defer tx.Rollback()
 
+	teamQuery, teamArgs, err := p.sb.
+		Select("team_id").
+		From("users").
+		Where(squirrel.Eq{"id": pr.Author.ID}).
+		ToSql()
+
+	if err != nil {
+		return err
+	}
+
+	var teamID int
+	err = tx.QueryRow(teamQuery, teamArgs...).Scan(&teamID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return repositories.ErrUserNotFoundInPersistence
+		}
+		return err
+	}
+
 	var mergedAt interface{}
 	if !pr.MergedAt.IsZero() {
 		mergedAt = pr.MergedAt
@@ -39,7 +58,7 @@ func (p *PullRequestDataBase) Add(pr *models.PullRequest) error {
 	prQuery, prArgs, err := p.sb.
 		Insert("prs").
 		Columns("title", "author_id", "team_id", "status", "created_at", "merged_at").
-		Values(pr.Name, pr.Author.ID, pr.Author.TeamName, string(pr.Status), pr.CreatedAt, mergedAt).
+		Values(pr.Name, pr.Author.ID, teamID, string(pr.Status), pr.CreatedAt, mergedAt).
 		Suffix("RETURNING id").
 		ToSql()
 
@@ -56,6 +75,9 @@ func (p *PullRequestDataBase) Add(pr *models.PullRequest) error {
 			if strings.Contains(err.Error(), "team_id") {
 				return repositories.ErrTeamNotFoundInPersistence
 			}
+		}
+		if err.Error() == "pq: duplicate key value violates unique constraint" {
+			return repositories.ErrPullRequestAlreadyExists
 		}
 		return err
 	}
@@ -651,4 +673,44 @@ func (p *PullRequestDataBase) Update(pr *models.PullRequest) error {
 	}
 
 	return tx.Commit()
+}
+
+func (p *PullRequestDataBase) FindPossibleReviewers(author *models.User) ([]*models.User, error) {
+	reviewersQuery, reviewersArgs, err := p.sb.
+		Select("u.id", "u.name", "u.email", "u.team_name", "u.is_active").
+		From("team_members m").
+		Join("users u ON m.user_id = u.id").
+		Where(squirrel.And{
+			squirrel.Eq{"u.team_name": author.TeamName},
+			squirrel.Eq{"u.is_active": true},
+			squirrel.NotEq{"u.id": author.ID},
+		}).
+		ToSql()
+
+	if err != nil {
+		return nil, err
+	}
+
+	reviewersRows, err := p.db.Query(reviewersQuery, reviewersArgs...)
+	if err != nil {
+		return nil, err
+	}
+	defer reviewersRows.Close()
+
+	var reviewers []*models.User
+
+	for reviewersRows.Next() {
+		reviewer := &models.User{}
+		err := reviewersRows.Scan(&reviewer.ID, &reviewer.Name, &reviewer.Email, &reviewer.TeamName, &reviewer.IsActive)
+		if err != nil {
+			return nil, err
+		}
+		reviewers = append(reviewers, reviewer)
+	}
+
+	if err = reviewersRows.Err(); err != nil {
+		return nil, err
+	}
+
+	return reviewers, nil
 }

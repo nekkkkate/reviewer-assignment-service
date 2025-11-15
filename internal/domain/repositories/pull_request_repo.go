@@ -13,6 +13,7 @@ type PullRequestRepository interface {
 	GetByAuthorID(authorID int) ([]*models.PullRequest, error)
 	GetByReviewerID(reviewerID int) ([]*models.PullRequest, error)
 	Update(pr *models.PullRequest) error
+	FindPossibleReviewers(author *models.User) ([]*models.User, error)
 }
 
 var (

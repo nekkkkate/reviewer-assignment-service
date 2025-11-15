@@ -22,6 +22,16 @@ func NewUserDataBase(db *sql.DB) *UserDataBase {
 }
 
 func (u *UserDataBase) Add(user *models.User) error {
+	tx, err := u.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
 	query, args, err := u.sb.
 		Insert("users").
 		Columns("name", "email", "team_name", "is_active").
@@ -33,14 +43,15 @@ func (u *UserDataBase) Add(user *models.User) error {
 		return err
 	}
 
-	err = u.db.QueryRow(query, args...).Scan(&user.ID)
+	err = tx.QueryRow(query, args...).Scan(&user.ID)
 	if err != nil {
 		if err.Error() == "pq: duplicate key value violates unique constraint" {
 			return repositories.ErrUserAlreadyExists
 		}
 		return err
 	}
-	return nil
+
+	return tx.Commit()
 }
 
 func (u *UserDataBase) GetByID(id int) (*models.User, error) {
@@ -216,6 +227,16 @@ func (u *UserDataBase) GetActiveUsers() ([]*models.User, error) {
 }
 
 func (u *UserDataBase) Update(user *models.User) error {
+	tx, err := u.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
 	query, args, err := u.sb.
 		Update("users").
 		Set("name", user.Name).
@@ -229,7 +250,7 @@ func (u *UserDataBase) Update(user *models.User) error {
 		return err
 	}
 
-	result, err := u.db.Exec(query, args...)
+	result, err := tx.Exec(query, args...)
 	if err != nil {
 		return err
 	}
@@ -243,10 +264,20 @@ func (u *UserDataBase) Update(user *models.User) error {
 		return repositories.ErrUserNotFoundInPersistence
 	}
 
-	return nil
+	return tx.Commit()
 }
 
 func (u *UserDataBase) Deactivate(userID int) error {
+	tx, err := u.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
 	query, args, err := u.sb.
 		Update("users").
 		Set("is_active", false).
@@ -257,7 +288,7 @@ func (u *UserDataBase) Deactivate(userID int) error {
 		return err
 	}
 
-	result, err := u.db.Exec(query, args...)
+	result, err := tx.Exec(query, args...)
 	if err != nil {
 		return err
 	}
@@ -271,5 +302,5 @@ func (u *UserDataBase) Deactivate(userID int) error {
 		return repositories.ErrUserNotFoundInPersistence
 	}
 
-	return nil
+	return tx.Commit()
 }

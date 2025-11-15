@@ -54,6 +54,26 @@ func (t *TeamDataBase) Add(team *models.Team) error {
 
 	if len(team.Members) > 0 {
 		for _, member := range team.Members {
+			//проверки на существование юзера и соответсвие его команды с текущей
+			chekMemberQuery, chekMemberArgs, err := t.sb.
+				Select("team_name").
+				From("users").
+				Where(squirrel.Eq{"id": member.UserID}).
+				ToSql()
+			if err != nil {
+				return err
+			}
+			var userTeamName string
+			err = tx.QueryRow(chekMemberQuery, chekMemberArgs...).Scan(&userTeamName)
+			if err != nil {
+				if errors.Is(err, sql.ErrNoRows) {
+					return repositories.ErrUserNotFoundInPersistence
+				}
+				return err
+			}
+			if userTeamName != team.Name {
+				return repositories.ErrUserNotInTeam
+			}
 			memberQuery, memberArgs, err := t.sb.
 				Insert("team_members").
 				Columns("team_id", "user_id").
