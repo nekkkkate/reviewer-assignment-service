@@ -6,29 +6,29 @@ import (
 	"time"
 )
 
-type PullRequestService struct {
+type PullRequestServiceImpl struct {
 	pullRequestRepository repositories.PullRequestRepository
 }
 
-func NewPullRequestService(pullRequestRepository repositories.PullRequestRepository) *PullRequestService {
-	return &PullRequestService{
+func NewPullRequestService(pullRequestRepository repositories.PullRequestRepository) *PullRequestServiceImpl {
+	return &PullRequestServiceImpl{
 		pullRequestRepository: pullRequestRepository,
 	}
 }
 
-func (p *PullRequestService) Create(pr *models.PullRequest) error {
+func (p *PullRequestServiceImpl) Create(pr *models.PullRequest) error {
 	return p.pullRequestRepository.Add(pr)
 }
 
-func (p *PullRequestService) GetByID(id int) (*models.PullRequest, error) {
+func (p *PullRequestServiceImpl) GetByID(id int) (*models.PullRequest, error) {
 	return p.pullRequestRepository.GetByID(id)
 }
 
-func (p *PullRequestService) Update(pr *models.PullRequest) error {
+func (p *PullRequestServiceImpl) Update(pr *models.PullRequest) error {
 	return p.pullRequestRepository.Update(pr)
 }
 
-func (p *PullRequestService) ReassignReviewers(pr *models.PullRequest, oldReviewer *models.User) error {
+func (p *PullRequestServiceImpl) ReassignReviewers(pr *models.PullRequest, oldReviewer *models.User) error {
 	pullRequest, err := p.pullRequestRepository.GetByID(pr.ID)
 	if err != nil {
 		return err
@@ -52,7 +52,7 @@ func (p *PullRequestService) ReassignReviewers(pr *models.PullRequest, oldReview
 	return pullRequest.ReplaceReviewer(oldReviewer.ID, newReviewer)
 }
 
-func (p *PullRequestService) MergeRequest(pr *models.PullRequest) error {
+func (p *PullRequestServiceImpl) MergeRequest(pr *models.PullRequest) error {
 	pullRequest, err := p.pullRequestRepository.GetByID(pr.ID)
 	if err != nil {
 		return err
@@ -64,9 +64,9 @@ func (p *PullRequestService) MergeRequest(pr *models.PullRequest) error {
 
 var defaultId = -10
 
-func (p *PullRequestService) GetByAuthorID(authorID int) ([]*models.PullRequest, error) {
+func (p *PullRequestServiceImpl) GetByAuthorID(authorID int) ([]*models.PullRequest, error) {
 	return p.pullRequestRepository.GetByAuthorID(authorID)
 }
-func (p *PullRequestService) GetByReviewerID(reviewerID int) ([]*models.PullRequest, error) {
+func (p *PullRequestServiceImpl) GetByReviewerID(reviewerID int) ([]*models.PullRequest, error) {
 	return p.pullRequestRepository.GetByReviewerID(reviewerID)
 }
