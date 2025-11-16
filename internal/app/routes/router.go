@@ -1,4 +1,4 @@
-package config
+package routes
 
 import (
 	"net/http"
@@ -13,6 +13,7 @@ import (
 func SetupRouter(
 	userService services.UserService,
 	prService services.PullRequestService,
+	teamService services.TeamService,
 ) http.Handler {
 	r := chi.NewRouter()
 
@@ -28,17 +29,29 @@ func SetupRouter(
 	})
 
 	userHandler := handlers.NewUserHandler(userService, prService)
+	teamHandler := handlers.NewTeamHandler(teamService)
 
 	r.Route("/", func(r chi.Router) {
 
-		r.Route("/", func(r chi.Router) {
-			r.Post("/create", userHandler.CreateUser)
+		r.Route("/users", func(r chi.Router) {
+			r.Post("/", userHandler.CreateUser)
 			r.Post("/setIsActive", userHandler.SetUserActive)
 			r.Post("/deactivate", userHandler.DeactivateUser)
 			r.Get("/getReview", userHandler.GetUserReviewPRs)
 			r.Get("/by-email", userHandler.GetUserByEmail)
 			r.Get("/", userHandler.GetAllUsers)
 			r.Get("/{id}", userHandler.GetUserByID)
+		})
+
+		r.Route("/teams", func(r chi.Router) {
+			r.Get("/", teamHandler.GetAllTeams)
+			r.Post("/", teamHandler.CreateTeam)
+			r.Get("/by-name/{name}", teamHandler.GetTeamByName)
+
+			r.Route("/{id}", func(r chi.Router) {
+				r.Get("/", teamHandler.GetTeamByID)
+				r.Put("/", teamHandler.UpdateTeam)
+			})
 		})
 
 	})
