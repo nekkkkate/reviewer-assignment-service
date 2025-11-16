@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"reviewer-assignment-service/internal/domain/models"
 	"reviewer-assignment-service/internal/domain/repositories"
-	"reviewer-assignment-service/internal/infrustructure/persistence/postgres"
+	"reviewer-assignment-service/internal/infrastructure/persistence/postgres"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"

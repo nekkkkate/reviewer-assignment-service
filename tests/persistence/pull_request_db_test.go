@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"regexp"
 	"reviewer-assignment-service/internal/domain/repositories"
-	"reviewer-assignment-service/internal/infrustructure/persistence/postgres"
+	"reviewer-assignment-service/internal/infrastructure/persistence/postgres"
 	"testing"
 	"time"
 

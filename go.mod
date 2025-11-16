@@ -10,6 +10,7 @@ require (
 require (
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/go-chi/chi/v5 v5.2.3
+	github.com/lib/pq v1.10.9
 )
 
 require (
