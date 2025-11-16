@@ -30,6 +30,7 @@ func SetupRouter(
 
 	userHandler := handlers.NewUserHandler(userService, prService)
 	teamHandler := handlers.NewTeamHandler(teamService)
+	prHandler := handlers.NewPullRequestHandler(prService, userService)
 
 	r.Route("/", func(r chi.Router) {
 
@@ -54,6 +55,21 @@ func SetupRouter(
 			})
 		})
 
+	})
+
+	r.Route("/pull-requests", func(r chi.Router) {
+		r.Post("/", prHandler.CreatePullRequest)
+
+		r.Get("/author/{authorID}", prHandler.GetPullRequestsByAuthor)
+		r.Get("/reviewer/{reviewerID}", prHandler.GetPullRequestsByReviewer)
+
+		r.Route("/{id}", func(r chi.Router) {
+			r.Get("/", prHandler.GetPullRequestByID)
+			r.Put("/", prHandler.UpdatePullRequest)
+
+			r.Post("/merge", prHandler.MergePullRequest)
+			r.Post("/reassign", prHandler.ReassignReviewers)
+		})
 	})
 
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
